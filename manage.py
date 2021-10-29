@@ -6,28 +6,23 @@
         缓存访问频率高的内容
         存储session信息 图片验证码 短信验证码之类的
     session配置
+        保存用户登录信息
     csrf配置
 """
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from redis
+from redis import StrictRedis
+from settings import Config
+from flask_session import Session
 
 app = Flask(__name__)
 
-
-class Config(object):
-    #  调试信息 是在浏览器显示错误信息还是说错误了直接404
-    DEBUG = True
-
-    #  数据库配置信息
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:123123@localhost:3360/info36"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-
-app.config.from_object("Config")
+app.config.from_object(Config)
 
 db = SQLAlchemy(app)
+#  decode_responses 自解码
+redis_store = StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_PORT, decode_responses=True)
 
 
 @app.route('/')
