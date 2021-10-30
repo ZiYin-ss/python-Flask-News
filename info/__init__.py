@@ -4,7 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from redis import StrictRedis
 from config import config_dict
-from info.modules.index import index_blue
+
+#  定义全局变量
+redis_store = None
 
 
 #  这个就是工厂方法
@@ -20,6 +22,7 @@ def create_app(config_name):
     db = SQLAlchemy(app)
 
     #  decode_responses自解码  配置redis连接  创建redis对象
+    global redis_store  # 将局部变量声明为一个全局的 语法是这样的 不是直接在下面的redis_store 前面加个global的
     redis_store = StrictRedis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
 
     #  创建session对象 读取App中的session配置信息  配置session在config文件中 都是key-value类型
@@ -29,6 +32,7 @@ def create_app(config_name):
     CSRFProtect(app)
 
     # 将首页蓝图注册到app中
+    from info.modules.index import index_blue
     app.register_blueprint(index_blue)
 
     return app
