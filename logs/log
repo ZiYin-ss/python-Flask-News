@@ -1,0 +1,6 @@
+INFO _internal.py:225  * Restarting with stat
+WARNING _internal.py:225  * Debugger is active!
+INFO _internal.py:225  * Debugger PIN: 410-912-632
+INFO _internal.py:225  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+INFO _internal.py:225 127.0.0.1 - - [30/Oct/2021 15:43:02] "GET / HTTP/1.1" 200 -
+INFO _internal.py:225 127.0.0.1 - - [30/Oct/2021 15:43:03] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
