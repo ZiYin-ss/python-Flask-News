@@ -1,32 +1,27 @@
-"""
-相关配置信息
-    数据库配置
-        为了在项目中用来存储新闻数据以及用户数据的
-    redis配置
-        缓存访问频率高的内容
-        存储session信息 图片验证码 短信验证码之类的
-    session配置
-        保存用户登录信息
-    csrf配置
-"""
-
-from flask import Flask
+from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from redis import StrictRedis
 from settings import Config
 from flask_session import Session
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
 
+#  注册配置信息
 app.config.from_object(Config)
-
+#  配置mysql
 db = SQLAlchemy(app)
-#  decode_responses 自解码
+#  decode_responses 自解码  配置redis连接
 redis_store = StrictRedis(host=Config.REDIS_HOST, port=Config.REDIS_PORT, decode_responses=True)
+#  创建session对象 读取App中的session配置信息  配置session在setting文件中 都是key-value类型
+Session(app)
+#  使用CSRFProtect保护app  验证csrf信息才能对后端进行操作
+CSRFProtect(app)
 
 
 @app.route('/')
 def hello_world():
+
     return "helloWorld"
 
 
