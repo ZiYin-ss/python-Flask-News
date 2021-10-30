@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, current_app
 
 from info.modules.index import index_blue
 
@@ -29,3 +29,11 @@ def index():
     # current_app.logger.error("输入错误信息2")
 
     return render_template("news/index.html")
+
+
+# 处理网站logo
+#  其实一行这样的代码就可以搞定谢谢<link rel="icon" href="../../static/news/favicon.ico">
+#  多会一种也不是问题吗
+@index_blue.route('/favicon.ico')
+def get_web_logo():
+    return current_app.send_static_file('news/favicon.ico')
