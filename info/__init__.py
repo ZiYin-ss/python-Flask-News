@@ -10,6 +10,9 @@ from config import config_dict
 #  定义全局变量
 redis_store = None
 
+# db是不是也得和store一样啊
+db = SQLAlchemy()
+
 
 #  这个就是工厂方法
 #  注册配置信息
@@ -24,7 +27,7 @@ def create_app(config_name):
     log_file(config.LEVEL_NAME)
 
     #  创建SQLAlchemy对象 关联app
-    db = SQLAlchemy(app)
+    db.init_app(app)
 
     #  decode_responses自解码  配置redis连接  创建redis对象
     global redis_store  # 将局部变量声明为一个全局的 语法是这样的 不是直接在下面的redis_store 前面加个global的
