@@ -1,5 +1,6 @@
 from datetime import timedelta
 from redis import StrictRedis
+import logging
 
 
 #  基类配置
@@ -23,6 +24,9 @@ class Config(object):
     SESSION_USE_SIGNER = True  # 设置签名存储
     PERMANENT_SESSION_LIFETIME = timedelta(days=2)  # 有效期两天
 
+    #  默认日志级别
+    LEVEL_NAME = logging.DEBUG
+
 
 # 开发环境配置信息
 class DevelopConfig(Config):
@@ -31,6 +35,7 @@ class DevelopConfig(Config):
 
 # 生产(上线)环境配置信息
 class ProductConfig(Config):
+    LEVEL_NAME = logging.ERROR
     DEBUG = False
 
 
