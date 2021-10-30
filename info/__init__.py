@@ -1,10 +1,12 @@
 import logging
 from logging.handlers import RotatingFileHandler
+
 from flask import Flask
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 from redis import StrictRedis
+
 from config import config_dict
 
 #  定义全局变量

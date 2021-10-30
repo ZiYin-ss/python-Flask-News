@@ -1,7 +1,4 @@
 from info.modules.index import index_blue
-from info import redis_store
-import logging
-from flask import current_app
 
 
 @index_blue.route('/', methods=["GET", "POST"])
