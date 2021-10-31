@@ -31,3 +31,6 @@ def image_code():
     response.headers["Content-Type"] = "image/png"
 
     return response
+
+
+
