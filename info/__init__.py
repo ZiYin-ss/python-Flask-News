@@ -43,7 +43,9 @@ def create_app(config_name):
 
     # 将首页蓝图注册到app中
     from info.modules.index import index_blue
+    from info.modules.passport import passport_blue
     app.register_blueprint(index_blue)
+    app.register_blueprint(passport_blue)
 
     return app
 
