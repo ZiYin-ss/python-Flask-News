@@ -8,7 +8,7 @@ from ...constants import IMAGE_CODE_REDIS_EXPIRES
 
 
 # 获取图片验证码
-# 接口文档的写法  请求路径，请求方式，携带参数，返回值
+# 接口文档的写法  请求路径，请求方式，携带参数(参数解释)，返回值
 @passport_blue.route("/image_code")
 def image_code():
     cur_id = request.args.get("cur_id")
