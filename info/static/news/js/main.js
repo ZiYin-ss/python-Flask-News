@@ -124,7 +124,6 @@ $(function(){
             "mobile":mobile,
             "password":password
         }
-        /*
         $.ajax({
             url:'/passport/login',
             type:'post',
@@ -133,7 +132,7 @@ $(function(){
             headers:{'X-CSRFToken':getCookie('csrf_token')},
             success: function (resp) {
                 //判断是否登陆成功
-                if(resp.errno == '0'){
+                if(resp.error == '0'){
                     window.location.reload()
                 }else{
                     alert(resp.errmsg);
@@ -141,7 +140,7 @@ $(function(){
 
             }
         })
-        */
+
     })
 
 

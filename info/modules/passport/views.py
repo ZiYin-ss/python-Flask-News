@@ -1,7 +1,7 @@
 import json
 import re
 import random
-from flask import request, current_app, make_response, jsonify
+from flask import request, current_app, make_response, jsonify, session
 from . import passport_blue
 from info.utils.captcha.captcha import captcha
 from ... import redis_store, constants, db
@@ -37,6 +37,7 @@ def image_code():
     return response
 
 
+# 发送短信验证码
 # 请求路径: /passport/sms_code
 # 请求方式: POST
 # 请求参数: mobile, image_code,image_code_id
@@ -133,6 +134,7 @@ def sms_code():
     return jsonify(error=RET.OK, errmsg="短信发送成功")
 
 
+# 用户注册
 # 请求路径: /passport/register
 # 请求方式: POST
 # 请求参数: mobile, sms_code,password
@@ -192,3 +194,40 @@ def register():
         return jsonify(error=RET.DBERR, errmsg="用户注册失败")
     # 10.返回响应
     return jsonify(error=RET.OK, errmsg="注册成功")
+
+
+# 登录用户
+# 请求路径: /passport/login
+# 请求方式: POST
+# 请求参数: mobile,password
+# 返回值: errno, errmsg
+@passport_blue.route('/login', methods=['POST'])
+def login():
+    # 1. 获取参数
+    mobile = request.json.get("mobile")
+    password = request.json.get("password")
+
+    # 2. 校验参数,为空校验
+    if not all([mobile, password]):
+        return jsonify(error=RET.PARAMERR, errmsg="参数不全")
+
+    # 3. 通过用户手机号,到数据库查询用户对象
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(error=RET.DBERR, errmsg="查询失败了啊")
+
+    # 4. 判断用户是否存在
+    if not user:
+        return jsonify(error=RET.NODATA, errmsg="该用户不存在")
+
+    # 5. 校验密码是否正确
+    if not user.check_passowrd(password):
+        return jsonify(error=RET.DATAERR, errmsg="密码错误")
+
+    # 6. 将用户的登陆信息保存在session中
+    session["user_id"] = user.id
+
+    # 7. 返回响应
+    return jsonify(error=RET.OK,errmsg="登录成功")
