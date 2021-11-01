@@ -176,7 +176,10 @@ def register():
 
     # 8.设置用户对象属性
     user.nick_name = mobile
-    user.password_hash = password
+    # user.password_hash = password
+    #  密码加密的方法 这个地方是调用模型类的里面的password方法 里面写了get set 和校验 就用明文和密文校验用别人的方法
+    #  保存密文  那边详细写有 检查方法不是注册调用的 而是登录调用的
+    user.password = password
     user.mobile = mobile
     user.signature = "什么都没写"
 
