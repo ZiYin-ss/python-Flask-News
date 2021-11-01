@@ -182,7 +182,7 @@ $(function(){
             "sms_code":smscode,
             "password":password
         }
-        /*
+
         $.ajax({
             url:'/passport/register',
             type:'post',
@@ -191,7 +191,7 @@ $(function(){
             headers:{'X-CSRFToken':getCookie('csrf_token')},
             success: function (resp) {
                 //判断是否注册成功
-                if(resp.errno == '0'){
+                if(resp.error == '0'){
                     //重新加载当前页面
                     window.location.reload()
                 }else{
@@ -199,7 +199,7 @@ $(function(){
                 }
             }
         })
-        */
+
     })
 })
 
