@@ -230,4 +230,4 @@ def login():
     session["user_id"] = user.id
 
     # 7. 返回响应
-    return jsonify(error=RET.OK,errmsg="登录成功")
+    return jsonify(error=RET.OK, errmsg="登录成功")
