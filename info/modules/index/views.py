@@ -1,5 +1,6 @@
-from flask import render_template, current_app
+from flask import render_template, current_app, session
 
+from info.models import User
 from info.modules.index import index_blue
 
 
@@ -28,7 +29,20 @@ def index():
     # current_app.logger.warning("输入警告信息2")
     # current_app.logger.error("输入错误信息2")
 
-    return render_template("news/index.html")
+    user_id = session.get("user_id")
+    #  通过user_id取出对象
+    user = None
+    if user_id:
+        try:
+            user = User.query.get(user_id)
+        except Exception as e:
+            current_app.logger.error(e)
+
+    data = {
+        "user_info": user.to_dict() if user else ""
+    }
+
+    return render_template("news/index.html", data=data)
 
 
 # 处理网站logo

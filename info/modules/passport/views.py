@@ -1,6 +1,8 @@
 import json
 import re
 import random
+from datetime import datetime
+
 from flask import request, current_app, make_response, jsonify, session
 from . import passport_blue
 from info.utils.captcha.captcha import captcha
@@ -229,5 +231,31 @@ def login():
     # 6. 将用户的登陆信息保存在session中
     session["user_id"] = user.id
 
+    #  记录用户最后登录时间 做活跃度调查的
+    user.last_login = datetime.now()
+
+    #  因为前面是不是获取了一条数据 这条数据 不就可以更新数据吗
+    # try:
+    #     db.session.add(user)
+    #     db.session.commit()
+    # except Exception as e:
+    #     current_app.logger.error(e)
+    #     return jsonify(error=RET.DBERR, errmsg="数据添加失败")
+
     # 7. 返回响应
     return jsonify(error=RET.OK, errmsg="登录成功")
+
+
+# 6.退出登陆
+# 请求路径: /passport/logout
+# 请求方式: POST
+# 请求参数: 无
+# 返回值: errno, errmsg
+@passport_blue.route('/logout',methods=['POST'])
+def logout():
+    #  其实这个地方不带参数 但是我总觉得不严谨  虽然说带了也没有用
+    #  清除session信息
+    session.pop("user_id",None)
+
+    # 返回响应
+    return jsonify(error=RET.OK, errmsg="")

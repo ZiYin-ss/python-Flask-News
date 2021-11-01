@@ -204,16 +204,15 @@ $(function(){
 
 //退出登陆
 function logout() {
-    /*
     $.ajax({
         url:'/passport/logout',
         type:'post',
         headers:{'X-CSRFToken':getCookie('csrf_token')},
         success:function (resp) {
+            alert("退出成功")
             window.location.reload()
         }
     })
-    */
 }
 
 
