@@ -14,6 +14,7 @@ $(function () {
         var clickCid = $(this).attr('data-cid')
         $('.menu li').each(function () {
             $(this).removeClass('active')
+        //     这个里面的this指所有的li  外面的指向点击的li
         })
         $(this).addClass('active')
 
@@ -67,7 +68,6 @@ function updateNewsData() {
         "cid": currentCid,
         'per_page': 5
     }
-    /*
     $.get("/newslist", params, function (resp) {
         // 设置 `数据正在查询数据` 变量为 false，以便下次上拉加载
         house_data_querying = false
@@ -97,5 +97,4 @@ function updateNewsData() {
             }
         }
     })
-    */
 }
