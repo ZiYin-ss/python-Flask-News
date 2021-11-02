@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from redis import StrictRedis
 
 from config import config_dict
@@ -39,13 +39,21 @@ def create_app(config_name):
     Session(app)
 
     #  使用CSRFProtect保护app  验证csrf信息才能对后端进行操作
-    # CSRFProtect(app)
+    CSRFProtect(app)
 
     # 将首页蓝图注册到app中
     from info.modules.index import index_blue
     from info.modules.passport import passport_blue
     app.register_blueprint(index_blue)
     app.register_blueprint(passport_blue)
+
+    @app.after_request
+    def after_request(resp):
+        #  调用系统方法获取csrf_token
+        csrf_token = generate_csrf()
+        # 将csrf_token设置到cookie中
+        resp.set_cookie("csrf_token", csrf_token)
+        return resp
 
     return app
 

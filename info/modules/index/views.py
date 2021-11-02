@@ -1,11 +1,12 @@
-from flask import render_template, current_app, session
+from flask import render_template, current_app, session, jsonify
 
-from info.models import User
+from info.models import User, News
 from info.modules.index import index_blue
+from info.utils.response_code import RET
 
 
 @index_blue.route('/', methods=["GET", "POST"])
-def index():
+def show_index():
     # 测试redis存取数据
     # redis_store.set('name', 'zzz')
     # print(redis_store.get('name'))
@@ -38,8 +39,23 @@ def index():
         except Exception as e:
             current_app.logger.error(e)
 
+    #  根据点击量查询前十条新闻
+    try:
+        #  不要说这个看不懂 就是 先顺序排序 括号里面依据clicks降序排序 后限制条数
+        #  SELECT * from info_news ORDER BY clicks DESC LIMIT 10;
+        news = News.query.order_by(News.clicks.desc()).limit(10).all()
+    except Exception as e:
+        return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
+
+    # 把news列表里面的一个个元素转成字典 因为查询出来的不就是列表里面一个个的news实例啊
+    news_list = []
+    for item in news:
+        news_list.append(item.to_dict())
+
+    #  拼接用户数据 就是这个user_info里面保存的是整个实例字典
     data = {
-        "user_info": user.to_dict() if user else ""
+        "user_info": user.to_dict() if user else "",
+        "news_list": news_list
     }
 
     return render_template("news/index.html", data=data)
