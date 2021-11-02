@@ -1,11 +1,13 @@
-from flask import render_template, current_app, session, jsonify, request
+from flask import render_template, current_app, session, jsonify, request, g
 
 from info.models import User, News, Category
 from info.modules.index import index_blue
+from info.utils.commons import user_login_data
 from info.utils.response_code import RET
 
 
 @index_blue.route('/', methods=["GET", "POST"])
+@user_login_data
 def show_index():
     # 测试redis存取数据
     # redis_store.set('name', 'zzz')
@@ -30,14 +32,14 @@ def show_index():
     # current_app.logger.warning("输入警告信息2")
     # current_app.logger.error("输入错误信息2")
 
-    user_id = session.get("user_id")  # 1 这个userid就是取出session 给前端 看显示什么
-    #  通过user_id取出对象
-    user = None
-    if user_id:
-        try:
-            user = User.query.get(user_id)
-        except Exception as e:
-            current_app.logger.error(e)
+    # user_id = session.get("user_id")  # 1 这个userid就是取出session 给前端 看显示什么
+    # #  通过user_id取出对象
+    # user = None
+    # if user_id:
+    #     try:
+    #         user = User.query.get(user_id)
+    #     except Exception as e:
+    #         current_app.logger.error(e)
 
     # 2 根据点击量查询前十条新闻
     try:
@@ -65,7 +67,7 @@ def show_index():
 
     #  拼接用户数据 就是这个user_info里面保存的是整个实例字典
     data = {
-        "user_info": user.to_dict() if user else "",
+        "user_info": g.user.to_dict() if g.user else "",
         "news_list": news_list,
         "category_list": category_list
     }

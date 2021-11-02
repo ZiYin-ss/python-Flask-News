@@ -39,6 +39,13 @@ def news_detail(news_id):
     for item in click_news:
         news_list.append(item.to_dict())
 
+    # 判断用户是否收藏过该新闻
+    is_collect = False
+    #  已经登录并且在用户收藏过的新闻列表中
+    if user:
+        for news in user.collection_news:
+            is_collect = True
+
     if not news:
         abort(404)
     # 如果出错返回404 abort()函数的作用
@@ -48,6 +55,7 @@ def news_detail(news_id):
     data = {
         "news_info": news.to_dict(),
         "news_list": news_list,
-        "user_info": user.to_dict() if user else ""
+        "user_info": user.to_dict() if user else "",
+        "is_collected": is_collect
     }
     return render_template("news/detail.html", data=data)
