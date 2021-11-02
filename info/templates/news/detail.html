@@ -23,8 +23,8 @@
         {# 新闻正文内容  这个地方注意这个content里面是有p标签 爬取的时候是把p标签一起爬取下来的 给这页面渲染 #}
         {{ data.news_info.content | safe }}
 
-        <a href="javascript:;" class="collection block-center" data-newid="" style="display: {% if data.is_collected %}none{% else %} block {% endif %}" >收藏</a>
-        <a href="javascript:;" class="collected block-center" data-newid="" style="display: {% if data.is_collected %}block{% else %} none {% endif %}"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
+        <a href="javascript:;" class="collection block-center" data-newid="{{ data.news_info.id }}" style="display: {% if data.is_collected %}none{% else %} block {% endif %}" >收藏</a>
+        <a href="javascript:;" class="collected block-center" data-newid="{{ data.news_info.id }}" style="display: {% if data.is_collected %}block{% else %} none {% endif %}"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
 
 
         {#需要根据用户登录状态显示不同的输入框#}
