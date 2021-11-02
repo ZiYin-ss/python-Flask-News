@@ -1,6 +1,6 @@
 from flask import render_template, current_app, session, jsonify
 
-from info.models import User, News
+from info.models import User, News, Category
 from info.modules.index import index_blue
 from info.utils.response_code import RET
 
@@ -30,7 +30,7 @@ def show_index():
     # current_app.logger.warning("输入警告信息2")
     # current_app.logger.error("输入错误信息2")
 
-    user_id = session.get("user_id")
+    user_id = session.get("user_id")  # 1 这个userid就是取出session 给前端 看显示什么
     #  通过user_id取出对象
     user = None
     if user_id:
@@ -39,7 +39,7 @@ def show_index():
         except Exception as e:
             current_app.logger.error(e)
 
-    #  根据点击量查询前十条新闻
+    # 2 根据点击量查询前十条新闻
     try:
         #  不要说这个看不懂 就是 先顺序排序 括号里面依据clicks降序排序 后限制条数
         #  SELECT * from info_news ORDER BY clicks DESC LIMIT 10;
@@ -52,10 +52,22 @@ def show_index():
     for item in news:
         news_list.append(item.to_dict())
 
+    # 3 查询所有分类数据
+    try:
+        categories = Category.query.all()
+    except Exception as e:
+        return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
+
+    #  将分类对象列表转为字典列表
+    category_list = []
+    for item in categories:
+        category_list.append(item.to_dict())
+
     #  拼接用户数据 就是这个user_info里面保存的是整个实例字典
     data = {
         "user_info": user.to_dict() if user else "",
-        "news_list": news_list
+        "news_list": news_list,
+        "category_list": category_list
     }
 
     return render_template("news/index.html", data=data)
