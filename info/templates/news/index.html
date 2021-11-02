@@ -96,8 +96,8 @@
             </div>
             <ul class="rank_list">
                 {% for news in data.news_list %}
-                    {#  根据遍历的所以设置标签的样式                   #}
-                    {%  if loop.index ==1 %}
+                    {#  根据遍历的所以设置标签的样式            第一种方式       #}
+                    {# {%  if loop.index ==1 %}
                          <li><span class="first">{{ loop.index }}</span><a href="#">{{news.title}}</a></li>
                     {% elif loop.index ==2  %}
                          <li><span class="second">{{ loop.index }}</span><a href="#">{{news.title}}</a></li>
@@ -105,8 +105,10 @@
                          <li><span class="third">{{ loop.index }}</span><a href="#">{{news.title}}</a></li>
                     {% else  %}
                          <li><span class="">{{ loop.index }}</span><a href="#">{{news.title}}</a></li>
-                    {% endif %}
+                    {% endif %} #}
 
+                    {#   第二种方式 过滤器                #}
+                    <li><span class="{{ loop.index | my_filter }}">{{ loop.index }}</span><a href="#">{{news.title}}</a></li>
                 {% endfor %}
 
 

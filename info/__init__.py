@@ -10,6 +10,8 @@ from redis import StrictRedis
 from config import config_dict
 
 #  定义全局变量
+from info.utils.commons import hot_news_filter
+
 redis_store = None
 
 # db是不是也得和store一样啊
@@ -47,6 +49,10 @@ def create_app(config_name):
     app.register_blueprint(index_blue)
     app.register_blueprint(passport_blue)
 
+    #  将函数添加到系统默认的过滤器列表 第一个参数是函数 第二个是过滤器的名字 这样的话就是说找这个过滤器 执行这个函数 参数就是|这个符合前面的东西
+    app.add_template_filter(hot_news_filter, "my_filter")
+
+    #  执行请求后钩子 将csrf放到session中
     @app.after_request
     def after_request(resp):
         #  调用系统方法获取csrf_token
