@@ -191,3 +191,68 @@ def news_comment():
         return jsonify(errno=RET.DBERR, errmsg="评论失败")
 
     return jsonify(errno=RET.OK, errmsg="评论成功", data=comment.to_dict())
+
+
+# 评论点赞
+# 请求路径: /news/comment_like
+# 请求方式: POST
+# 请求参数:comment_id,action,g.user
+# 返回值: errno,errmsg
+@news_blue.route("/comment_like", methods=['POST'])
+@user_login_data
+def comment_like():
+    if not g.user:
+        return jsonify(errno=RET.NODATA, errmsg="用户未登录")
+
+    comment_id = request.json.get("comment_id")
+    action = request.json.get("action")
+
+    if not all([comment_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
+
+    if not action in ["add", "remove"]:
+        return jsonify(errno=RET.DATAERR, errmsg="操作类型有误")
+
+    try:
+        comment = Comment.query.get(comment_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="获取评论失败")
+
+    if not comment:
+        return jsonify(errno=RET.NODATA, errmsg="评论不存在")
+
+    #  根据操作类型点赞和取消点赞
+    try:
+        if action == "add":
+            #  这个是判断用户是否点赞了 用户id和评论id都有的东西 不就是点赞了吗
+            comment_like = CommentLike.query.filter(CommentLike.user_id == g.user.id,
+                                                    CommentLike.comment_id == comment_id).first()
+            if not comment_like:
+                comment_like = CommentLike()
+                comment_like.user_id = g.user.id
+                comment_like.comment_id = comment_id
+
+                # 添加到数据库中
+                db.session.add(comment_like)
+                db.session.commit()
+
+                # 将该评论点赞数量+1
+                comment.like_count += 1
+                db.session.commit()
+
+        else:
+            comment_like = CommentLike.query.filter(CommentLike.user_id == g.user.id,
+                                                    CommentLike.comment_id == comment_id).first()
+            if comment_like:
+                db.session.delete(comment_like)
+
+                # 将该评论点赞数量-1
+                if comment.like_count > 0:
+                    comment.like_count -= 1
+                db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="操作失败")
+
+    return jsonify(errno=RET.OK, errmsg="操作成功")

@@ -73,7 +73,8 @@
                     {% endif %}
 
                     <div class="comment_time fl">{{ comment.create_time}}</div>
-                    <a href="javascript:;" class="comment_up {% if comment.is_like %} has_comment_up {% endif %} fr">{{ comment.like_count }}</a>
+                    <a href="javascript:;" class="comment_up {% if comment.is_like %} has_comment_up {% endif %} fr"
+                       data-commentid="{{ comment.id }}">{{ comment.like_count }}</a>
 
                     <a href="javascript:;" class="comment_reply fr">回复</a>
                     <from class="reply_form fl" data-newsid="{{ comment.news_id }}" data-commentid="{{ comment.id }}">
