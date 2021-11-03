@@ -1,7 +1,7 @@
 from flask import render_template, jsonify, current_app, abort, session, g, request
 
 from ... import db
-from ...models import News, User, Comment
+from ...models import News, User, Comment, CommentLike
 from ...utils.commons import user_login_data
 from ...utils.response_code import RET
 from . import news_blue
@@ -14,6 +14,7 @@ from . import news_blue
 # 返回值: detail.html页面, 用户,新闻data字典数据
 #  <int:news_id>这个和django一样啊 路由这样写动态类型 对应的视图函数还可以接收到这个news_id
 @news_blue.route('/<int:news_id>')
+@user_login_data
 def news_detail(news_id):
     #  根据新闻编号查询新闻对象
     try:
@@ -56,9 +57,31 @@ def news_detail(news_id):
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
 
+    # 该用户点过所有的赞
+    try:
+        commentlikes = []
+        if g.user:
+            commentlikes = CommentLike.query.filter(CommentLike.user_id == g.user.id).all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
+
+    # 获取用户所有点赞过的评论编号
+    mylike_comment_ids = []
+    for commentlike in commentlikes:
+        mylike_comment_ids.append(commentlike.comment_id)
+
     comments_list = []
     for comment in comments:
-        comments_list.append(comment.to_dict())
+        comm_dict = comment.to_dict()
+        # 添加is_like记录点赞
+        comm_dict["is_like"] = False
+
+        #  判断用户是否点过赞
+        if g.user and comment.id in mylike_comment_ids:
+            comm_dict["is_like"] = True
+
+        comments_list.append(comm_dict)
 
     if not news:
         abort(404)
