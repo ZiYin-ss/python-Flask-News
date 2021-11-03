@@ -1,11 +1,13 @@
 from flask import render_template, jsonify, current_app, abort, session, g, request
-from ...models import News, User
+
+from ... import db
+from ...models import News, User, Comment
 from ...utils.commons import user_login_data
 from ...utils.response_code import RET
 from . import news_blue
 
 
-# 9.新闻详情展示(新闻)
+# 新闻详情展示(新闻)
 # 请求路径: /news/<int:news_id>
 # 请求方式: GET
 # 请求参数:news_id
@@ -47,6 +49,17 @@ def news_detail(news_id):
         if news in user.collection_news:
             is_collect = True
 
+    # 查询数据库中该新闻的所有评论内容
+    try:
+        comments = Comment.query.filter(Comment.news_id == news_id).order_by(Comment.create_time.desc()).all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
+
+    comments_list = []
+    for comment in comments:
+        comments_list.append(comment.to_dict())
+
     if not news:
         abort(404)
     # 如果出错返回404 abort()函数的作用
@@ -57,12 +70,13 @@ def news_detail(news_id):
         "news_info": news.to_dict(),
         "news_list": news_list,
         "user_info": user.to_dict() if user else "",
-        "is_collected": is_collect
+        "is_collected": is_collect,
+        "comments": comments_list
     }
     return render_template("news/detail.html", data=data)
 
 
-# 12.收藏功能接口
+# 收藏功能接口
 # 请求路径: /news/news_collect
 # 请求方式: POST
 # 请求参数:news_id,action, g.user
@@ -108,3 +122,49 @@ def news_collect():
 
     # 8. 返回响应
     return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+# 新闻评论后端
+# 请求路径: /news/news_comment
+# 请求方式: POST
+# 请求参数:news_id,comment,parent_id, g.user
+# 返回值: errno,errmsg,评论字典
+@news_blue.route("/news_comment", methods=['POST'])
+@user_login_data
+def news_comment():
+    if not g.user:
+        return jsonify(errno=RET.NODATA, errmsg="用户未登录")
+
+    news_id = request.json.get("news_id")
+    content = request.json.get("comment")
+    parent_id = request.json.get("parent_id")
+
+    if not all([news_id, content]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
+
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="新闻获取失败")
+
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg="新闻不存在")
+
+    # 创建评论对象 设置属性
+    comment = Comment()
+    comment.user_id = g.user.id
+    comment.news_id = news_id
+    comment.content = content
+    if parent_id:  # 这个父id其实就相当于我们在别人的评论下面评论 这个父ID其实也是一条评论 就这
+        comment.parent_id = parent_id
+
+    # 将上面的评论对象保存到数据库 其实这个地方也是多对多关系 评论 还要显示的呢
+    try:
+        db.session.add(comment)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="评论失败")
+
+    return jsonify(errno=RET.OK, errmsg="评论成功", data=comment.to_dict())
