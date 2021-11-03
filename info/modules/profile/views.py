@@ -1,7 +1,9 @@
-from flask import render_template, g, redirect, request, jsonify
+from flask import render_template, g, redirect, request, jsonify, current_app
 
 from . import profile_blue
+from ... import constants
 from ...utils.commons import user_login_data
+from ...utils.image_storage import image_storage
 from ...utils.response_code import RET
 
 
@@ -60,13 +62,32 @@ def pic_info():
     if request.method == "GET":
         return render_template("news/user_pic_info.html", user_info=g.user.to_dict())
     # 2.携带用户的数据, 渲染页面
-    pass
+    avatar = request.files.get("avatar")
+
     # 3.如果是post请求
-    # 4.获取参数
-    # 5.校验参数, 为空校验
+    if not all([avatar]):
+        return jsonify(errno=RET.PARAMERR, errmsg="图片不能为空")
+
+    # print(avatar)  <FileStorage: '0.jpg' ('image/jpeg')>
     # 6. 上传图像, 判断图片是否上传成功
+    try:
+        #  前端是传过来的文件 二进制读取就用read()就可以了 这样 avatar就是一个二进制文件了
+        image_name = image_storage(avatar.read())
+    except Exception as e:
+        current_app.logger.error(e)
+
     # 7.将图片设置到用户对象
+    if image_name:
+        g.user.avatar_url = image_name
+    else:
+        return jsonify(errno=RET.THIRDERR, errmsg="上传失败")
+
     # 8.返回响应
+    data = {
+        "avatar_url": constants.QINIU_DOMIN_PREFIX + image_name
+    }
+
+    return jsonify(errno=RET.OK, errmsg="上传成功", data=data)
 
 
 # 获取/设置用户密码

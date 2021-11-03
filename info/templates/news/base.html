@@ -16,7 +16,12 @@
             {% block headerBlock %}{% endblock %}
             {% if data.user_info %}
                 <div class="user_login fr">
-                    <img src="../../static/news/images/person01.png" class="lgin_pic">
+                    {% if data.user_info.avatar_url %}
+                        <img src="{{data.user_info.avatar_url}}" class="lgin_pic">
+                    {% else %}
+                        <img src="../../static/news/images/person01.png" class="lgin_pic">
+                    {% endif %}
+
                     <a href="/user/user_index">{{data.user_info.nick_name}}</a>
                     <a href="#" onclick="logout()">退出</a>
                 </div>

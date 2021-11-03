@@ -11,7 +11,11 @@
 {% block contentBlock %}
     <div class="user_menu_con fl">
         <div class="user_center_pic">
-            <img src="../../static/news/images/user_pic.png" alt="用户图片">
+            {% if data.user_info.avatar_url %}
+                <img src="{{data.user_info.avatar_url}}" class="lgin_pic">
+            {% else %}
+                <img src="../../static/news/images/person01.png" class="lgin_pic">
+            {% endif %}
         </div>
         <div class="user_center_name">{{ data.user_info.nick_name }}</div>
 
