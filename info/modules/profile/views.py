@@ -245,7 +245,8 @@ def news_list():
         page = 1
 
     try:
-        paginate = News.query.filter(News.user_id == g.user.id).order_by(News.create_time.desc()).paginate(page, 10, False)
+        paginate = News.query.filter(News.user_id == g.user.id).order_by(News.create_time.desc()).paginate(page, 10,
+                                                                                                           False)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
@@ -265,3 +266,45 @@ def news_list():
     }
 
     return render_template("news/user_news_list.html", data=data)
+
+
+# 获取我的关注
+# 请求路径: /user/user_follow
+# 请求方式: GET
+# 请求参数:p
+# 返回值: 渲染user_follow.html页面,字典data数据
+@profile_blue.route('/user_follow', methods=['GET'])
+@user_login_data
+def user_follow():
+    page = request.args.get("p", 1)
+
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+
+    try:
+        #  这个地方是反向查询 就是followers是自己的粉丝 就是说别人关注你了
+        #  而followed是查询你关注了谁 通过第三张表查的 就是根据自己的id查询我关注了谁
+        #  查询的还是user实例
+        paginate = g.user.followed.paginate(page, 4, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
+
+    totalPage = paginate.pages
+    currentPage = paginate.page
+    items = paginate.items
+
+    author_list = []
+    for author in items:
+        author_list.append(author.to_dict())
+
+    data = {
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "author_list": author_list
+    }
+
+    return render_template("news/user_follow.html", data=data)
