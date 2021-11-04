@@ -263,3 +263,43 @@ def comment_like():
         return jsonify(errno=RET.DBERR, errmsg="操作失败")
 
     return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+# 关注与取消关注
+# 请求路径: /news/followed_user
+# 请求方式: POST
+# 请求参数:user_id,action
+# 返回值: errno, errmsg
+@news_blue.route('/followed_user', methods=['POST'])
+@user_login_data
+def followed_user():
+    if not g.user:
+        return jsonify(errno=RET.NODATA, errmsg="用户未登录")
+
+    user_id = request.json.get("user_id")
+    action = request.json.get("action")
+
+    if not all([user_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不全")
+
+    if not action in ["follow", "unfollow"]:
+        return jsonify(errno=RET.DATAERR, errmsg="操作类型有误")
+
+    try:
+        #  这个author其实就是user的实例 而前端是 news.author.id 传过来的用户id
+        author = User.query.get(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="作者获取失败")
+
+    if not author:
+        return jsonify(errno=RET.NODATA, errmsg="作者不存在")
+
+    if action == "follow":
+        if not g.user in author.followers:
+            author.followers.append(g.user)
+    else:
+        if not g.user in author.followers:
+            author.followers.remove(g.user)
+
+    return jsonify(errno=RET.OK, errmsg="操作成功")
