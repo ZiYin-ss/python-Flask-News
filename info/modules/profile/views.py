@@ -2,6 +2,7 @@ from flask import render_template, g, redirect, request, jsonify, current_app
 
 from . import profile_blue
 from ... import constants
+from ...models import News
 from ...utils.commons import user_login_data
 from ...utils.image_storage import image_storage
 from ...utils.response_code import RET
@@ -120,3 +121,44 @@ def pass_info():
 
     #   7. 返回响应
     return jsonify(errno=RET.OK, errmsg="修改成功")
+
+
+# 获取新闻收藏列表
+# 请求路径: /user/ collection
+# 请求方式:GET
+# 请求参数:p(页数)
+# 返回值: user_collection.html页面
+@profile_blue.route('/collection')
+@user_login_data
+def collection():
+    page = request.args.get("p", 1)
+
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+
+    try:
+        #  这个是模型类的查询方式 就是多对多关系  找到当前用户对应的收藏 按照他们的创建实际倒序排列
+        #  多说一句这个地方是查询用户收藏的新闻对象 这个paginate返回的是news实例
+        paginate = g.user.collection_news.order_by(News.create_time.desc()).paginate(page, 2, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
+
+    totalPage = paginate.pages
+    currentPage = paginate.page
+    items = paginate.items
+
+    news_list = []
+    for news in items:
+        news_list.append(news.to_dict())
+
+    data = {
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
+    }
+
+    return render_template("news/user_collection.html", data=data)
