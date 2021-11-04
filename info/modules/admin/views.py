@@ -1,12 +1,15 @@
-from flask import render_template, request, current_app, session, redirect
+from flask import render_template, request, current_app, session, redirect, g
 
 from . import admin_blue
 from ...models import User
+from ...utils.commons import user_login_data
 
 
 @admin_blue.route('/login', methods=["GET", "POST"])
 def admin_login():
     if request.method == "GET":
+        if session.get("is_admin"):
+            return redirect("/admin/index")
         return render_template("admin/login.html")
 
     username = request.form.get("username")
@@ -30,4 +33,14 @@ def admin_login():
     session["user_id"] = admin.id
     session["is_admin"] = True
 
-    return redirect("http://taobao.com")
+    return redirect("/admin/index")
+
+
+@admin_blue.route("/index")
+@user_login_data
+def admin_index():
+    data = {
+        #  这个g.user 是管理员登录的 那个用户实例 因为是不是更新session了啊 为管理员id
+        "user_info": g.user.to_dict() if g.user else ""
+    }
+    return render_template("admin/index.html", data=data)

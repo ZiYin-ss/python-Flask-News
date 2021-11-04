@@ -1,6 +1,7 @@
 # 自定义过滤器 实现热门新闻的颜色过滤
 from flask import session, current_app, g
-from functools import  wraps
+from functools import wraps
+
 
 def hot_news_filter(index):
     if index == 1:
@@ -30,3 +31,4 @@ def user_login_data(view_func):
         return view_func(*args, **kwargs)
 
     return wrapper
+

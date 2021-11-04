@@ -251,11 +251,12 @@ def login():
 # 请求方式: POST
 # 请求参数: 无
 # 返回值: errno, errmsg
-@passport_blue.route('/logout',methods=['POST'])
+@passport_blue.route('/logout', methods=['POST'])
 def logout():
     #  其实这个地方不带参数 但是我总觉得不严谨  虽然说带了也没有用
     #  清除session信息
-    session.pop("user_id",None)
+    session.pop("user_id", None)
+    session.pop("is_admin", None)
 
     # 返回响应
     return jsonify(error=RET.OK, errmsg="")
