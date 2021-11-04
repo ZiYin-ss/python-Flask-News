@@ -27,7 +27,7 @@
                     currentPage: {{ data.currentPage }},
                     totalPage: {{ data.totalPage }},
                     callback: function(current) {
-                        alert('ok!');
+                        window.location.href="user/collectionp?p="+current;
                     }
                 });
             });

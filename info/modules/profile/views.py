@@ -212,7 +212,7 @@ def news_release():
     news.source = g.user.nick_name
     news.digest = digest
     news.content = content
-    news.index_image_url = constants.QINIU_DOMIN_PREFIX+ image_name
+    news.index_image_url = constants.QINIU_DOMIN_PREFIX + image_name
     news.category_id = category_id
     news.user_id = g.user.id
     news.status = 1
@@ -227,3 +227,41 @@ def news_release():
 
     # 8.返回响应
     return jsonify(errno=RET.OK, errmsg="图片发布成功")
+
+
+# 用户新闻列表
+# 请求路径: /user/news_list
+# 请求方式:GET
+# 请求参数:p
+# 返回值:GET渲染user_news_list.html页面
+@profile_blue.route("/news_list", methods=['GET'])
+@user_login_data
+def news_list():
+    page = request.args.get("p", 1)
+
+    try:
+        page = int(page)
+    except Exception as e:
+        page = 1
+
+    try:
+        paginate = News.query.filter(News.user_id == g.user.id).order_by(News.create_time.desc()).paginate(page, 10, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="获取新闻失败")
+
+    totalPage = paginate.pages
+    currentPage = paginate.page
+    items = paginate.items
+
+    news_list = []
+    for news in items:
+        news_list.append(news.to_review_dict())
+
+    data = {
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
+    }
+
+    return render_template("news/user_news_list.html", data=data)
