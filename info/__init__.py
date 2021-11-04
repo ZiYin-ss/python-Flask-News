@@ -49,10 +49,12 @@ def create_app(config_name):
     from info.modules.passport import passport_blue
     from info.modules.news import news_blue
     from info.modules.profile import profile_blue
+    from info.modules.admin import admin_blue
     app.register_blueprint(index_blue)
     app.register_blueprint(passport_blue)
     app.register_blueprint(news_blue)
     app.register_blueprint(profile_blue)
+    app.register_blueprint(admin_blue)
 
     #  将函数添加到系统默认的过滤器列表 第一个参数是函数 第二个是过滤器的名字 这样的话就是说找这个过滤器 执行这个函数 参数就是|这个符合前面的东西
     app.add_template_filter(hot_news_filter, "my_filter")
