@@ -83,6 +83,12 @@ def news_detail(news_id):
 
         comments_list.append(comm_dict)
 
+    # 判断登录的用户是否关注了新闻的作者
+    is_followed = False
+    if g.user and news.user:
+        if g.user in news.user.followers:
+            is_followed = True
+
     if not news:
         abort(404)
     # 如果出错返回404 abort()函数的作用
@@ -94,7 +100,8 @@ def news_detail(news_id):
         "news_list": news_list,
         "user_info": user.to_dict() if user else "",
         "is_collected": is_collect,
-        "comments": comments_list
+        "comments": comments_list,
+        "is_followed": is_followed
     }
     return render_template("news/detail.html", data=data)
 
