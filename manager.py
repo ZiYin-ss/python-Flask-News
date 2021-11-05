@@ -1,3 +1,6 @@
+from datetime import timedelta, datetime
+from random import randint
+
 from flask import current_app
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
@@ -37,6 +40,28 @@ def create_superuser(username, password):
     return "创建成功"
 
 
-if __name__ == '__main__':
+@manager.option('-t', '--test', dest='test')
+def add_test_user(test):
+    user_list = []
 
+    for i in range(0, 1000):
+        user = User()
+        user.nick_name = "老王%s" % i
+        user.mobile = "138%08d" % i  # 138开头 i写后面 8位 不足用0补
+        user.password = "pbkdf2:sha256:150000$NQBQ3b4E$9030d8363d95f83c187f4dd886fba23c1e617ebcf9805dd161e826fc98399e38"
+        user.last_login = datetime.now() - timedelta(seconds=randint(0, 3600 * 24 * 31))
+        user_list.append(user)
+
+    try:
+        #  添加这个列表里面的所有对象到数据库
+        db.session.add_all(user_list)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        return "添加数据失败"
+
+    return "添加数据成功"
+
+
+if __name__ == '__main__':
     manager.run()
