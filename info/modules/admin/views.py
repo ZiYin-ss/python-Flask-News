@@ -1,8 +1,8 @@
-from flask import render_template, request, current_app, session, redirect, g
+from flask import render_template, request, current_app, session, redirect, g, jsonify
 import time
 from datetime import datetime, timedelta
 from . import admin_blue
-from ...models import User
+from ...models import User, News
 from ...utils.commons import user_login_data
 
 
@@ -115,3 +115,94 @@ def user_count():
         "active_date": active_date
     }
     return render_template("admin/user_count.html", data=data)
+
+
+# 用户列表
+# 请求路径: /admin/user_list
+# 请求方式: GET
+# 请求参数: p
+# 返回值:渲染user_list.html页面,data字典数据
+@admin_blue.route('/user_list')
+def user_list():
+    # 1. 获取参数,p
+    page = request.args.get("p", "1")
+
+    # 2. 参数类型转换
+    try:
+        page = int(page)
+    except Exception as e:
+        page = 1
+
+    # 3. 分页查询用户数据
+    try:
+        paginate = User.query.filter(User.is_admin == False).order_by(User.create_time.desc()).paginate(page, 10, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return render_template("admin/user_list.html", errmsg="获取用户失败")
+
+    # 4. 获取分页对象属性,总页数,当前页,当前页对象列表
+    totalPage = paginate.pages
+    currentPage = paginate.page
+    items = paginate.items
+
+    # 5. 将对象列表,转成字典列表
+    user_list = []
+    for user in items:
+        user_list.append(user.to_admin_dict())
+
+    # 6. 拼接数据,渲染页面
+    data = {
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "user_list": user_list
+    }
+    return render_template("admin/user_list.html", data=data)
+
+
+# 获取/设置新闻审核列表
+# 请求路径: /admin/news_review
+# 请求方式: GET
+# 请求参数: GET, p,keywords
+# 返回值:渲染user_list.html页面,data字典数据
+@admin_blue.route('/news_review')
+def news_review():
+    # 1. 获取参数,p
+    page = request.args.get("p", "1")
+    keywords = request.args.get("keywords", "")
+
+    # 2. 参数类型转换
+    try:
+        page = int(page)
+    except Exception as e:
+        page = 1
+
+    # 3. 分页查询待审核,未通过的新闻数据
+    try:
+        # 3.1判断是否有填写搜索关键
+        filters = [News.status != 0]
+        if keywords:
+            #  这个就是模糊查询了 like查询
+            filters.append(News.title.contains(keywords))
+
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, 3, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return render_template("admin/news_review.html", errmsg="获取新闻失败")
+
+    # 4. 获取分页对象属性,总页数,当前页,当前页对象列表
+    totalPage = paginate.pages
+    currentPage = paginate.page
+    items = paginate.items
+
+    # 5. 将对象列表,转成字典列表
+    news_list = []
+    for news in items:
+        news_list.append(news.to_review_dict())
+
+    # 6. 拼接数据,渲染页面
+    data = {
+        "totalPage": totalPage,
+        "currentPage": currentPage,
+        "news_list": news_list
+    }
+    return render_template("admin/news_review.html", data=data)
